@@ -1,7 +1,3 @@
-Okay, here is a consolidated English text describing your portfolio bot for a customer, integrating the technical details from your current README and the functional description we developed previously.
-
----
-
 ## 📄 Portfolio Bot Project Overview
 
 This is an **asynchronous Telegram Portfolio Management Bot** built using the modern Python stack. It is designed to efficiently showcase projects, categorize them, and manage content submission from users, with clear administrative oversight. The core functionality is divided into secure **Admin** features for moderation and robust **Public** access for viewing and submitting projects.
@@ -23,7 +19,3 @@ The administrator panel provides essential control tools: viewing core usage sta
 ### Deployment Summary
 
 Configuration relies on `python-dotenv` for simple management of environment variables (`BOT_TOKEN`, `ADMIN_ID`). To deploy and start the bot: first activate the virtual environment (`.venv/Scripts/Activate.ps1` or `activate`), and then run `python main.py`.
-
----
-
-Would you like to focus on polishing a specific section of this text, such as the technical stack or the admin features?
