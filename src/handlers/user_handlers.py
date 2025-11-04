@@ -8,7 +8,7 @@ from src.middlewares.admin_check import AdminMiddleware
 from src.database.models import User, PortfolioItem, Category 
 from src.fsm.project_fsm import AddProjectStates, UserAddProjectStates 
 from src.callbacks.project_cb import ProjectCallback, CategoryCallback
-from src.config import Config
+from src.config import settings
 
 router = Router()
 admin_router = Router()
@@ -114,7 +114,7 @@ def get_project_navigation_keyboard(item: PortfolioItem, total_count: int, curre
     
     # Back button
     if is_moderator_view:
-         buttons.append([InlineKeyboardButton(text="🔙 Back to Moderation Menu", callback_data="admin_moderate_list")])
+         buttons.append([InlineKeyboardButton(text="🔙 Back to Moderation Menu", callback_data="back_to_admin_main_menu")])
     else:
         buttons.append([InlineKeyboardButton(text="🗂️ To Categories", callback_data="show_categories")])
         buttons.append([InlineKeyboardButton(text="🔙 Back to Main Menu", callback_data="show_start")])
@@ -138,7 +138,7 @@ async def command_start_handler(message: Message, session_maker: async_sessionma
             new_user = User(
                 user_id=user_id,
                 username=username,
-                is_admin=(user_id == Config.ADMIN_ID) 
+                is_admin=(user_id == settings.ADMIN_ID)
             )
             session.add(new_user)
             await session.commit()
@@ -226,7 +226,7 @@ async def show_categories_handler(callback: CallbackQuery, session_maker: async_
 async def show_portfolio_by_category_handler(callback: CallbackQuery, session_maker: async_sessionmaker[AsyncSession]):
     """Handler for displaying and navigating projects within the selected category."""
     
-    is_admin = callback.from_user.id == Config.ADMIN_ID 
+    is_admin = callback.from_user.id == settings.ADMIN_ID 
     current_index = 0
     
     # --- FIX for 'AttributeError' ---
@@ -556,23 +556,21 @@ async def admin_stats_handler(callback: CallbackQuery, session_maker: async_sess
 
 # --- 2. ADMIN PROJECT ADDITION LOGIC (FSM) ---
 
-@admin_router.callback_query(F.data == "admin_add_project", StateFilter(None))
-async def admin_add_project_callback(callback: CallbackQuery, state: FSMContext, session_maker: async_sessionmaker[AsyncSession]):
-    """Start FSM for adding a project (ADMIN)."""
+@admin_router.callback_query(F.data == "back_to_admin_main_menu")
+async def admin_main_menu_handler(callback: CallbackQuery):
+    # ... (логика, которую вы предоставили)
+    await callback.answer() 
     
-    await callback.answer()
-    
-    async with session_maker() as session:
-        keyboard = await get_categories_keyboard(session)
-    
-    # --- CHANGE: Step 1/6 ---
-    await callback.message.edit_text(
-        "➡️ ADD PROJECT (ADMIN)\n\n"
-        "Step 1/6: Select the project category:",
-        reply_markup=keyboard,
+    try:
+        await callback.message.delete()
+    except Exception:
+        pass
+        
+    await callback.message.answer(
+        "🔐 <b>Admin Panel:</b> Select an action.", 
+        reply_markup=get_admin_main_keyboard(), 
         parse_mode='HTML'
     )
-    await state.set_state(AddProjectStates.get_category)
     
 @admin_router.callback_query(AddProjectStates.get_category, CategoryCallback.filter())
 async def admin_process_project_category(callback: CallbackQuery, callback_data: CategoryCallback, state: FSMContext):
@@ -705,7 +703,7 @@ async def admin_send_project_document_handler(callback: CallbackQuery, callback_
 async def admin_moderate_list_handler(callback: CallbackQuery, session_maker: async_sessionmaker[AsyncSession], callback_data=None):
     """Shows the list of projects awaiting moderation."""
     
-    is_admin = callback.from_user.id == Config.ADMIN_ID 
+    is_admin = callback.from_user.id == settings.ADMIN_ID 
     current_index = 0
     
     if callback.data != "admin_moderate_list":
@@ -724,19 +722,20 @@ async def admin_moderate_list_handler(callback: CallbackQuery, session_maker: as
         total_count = await session.scalar(total_count_stmt)
 
         if total_count == 0:
-          await callback.answer("✅ No new projects pending moderation.", show_alert=True)
+            await callback.answer("✅ No new projects pending moderation.", show_alert=True)
           
-          # Check if we are already in the main menu
-          if "<b>Admin Panel:</b>" in callback.message.text:
-                 return # Just showed the alert and exited
-
-          # If not, edit the message
-          await callback.message.edit_text(
-              "🔐 <b>Admin Panel:</b> Select an action.", 
-              reply_markup=get_admin_main_keyboard(), 
-              parse_mode='HTML'
-          )
-          return
+            # ИСПРАВЛЕНИЕ: Вместо сложного редактирования используем удаление и новую отправку
+            try:
+                await callback.message.delete()
+            except Exception:
+                pass
+            
+            await callback.message.answer(
+                "🔐 <b>Admin Panel:</b> Select an action.", 
+                reply_markup=get_admin_main_keyboard(), 
+                parse_mode='HTML'
+            )
+            return
 
         # Get the project object
         stmt = stmt.limit(1).offset(current_index).order_by(PortfolioItem.id)

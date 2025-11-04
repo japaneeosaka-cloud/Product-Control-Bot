@@ -1,14 +1,27 @@
 .env
 service_account.json
 
+# --- Python Virtual Environment ---
 venv/
 .venv/
 */venv/
 
+# --- Database & Config ---
 *.sqlite3
 db.sqlite3
+.DS_Store
 
+# --- Compiled Files ---
 __pycache__/
 *.pyc
+.mypy_cache/
 
+# --- IDE Files ---
 .vscode/
+.idea/
+
+# --- Docker & Logs ---
+# Игнорируем директории и файлы, созданные Docker
+/logs
+/volumes
+/data

@@ -2,7 +2,7 @@
 from aiogram import BaseMiddleware
 from aiogram.types import Message
 from typing import Callable, Dict, Any, Awaitable
-from src.config import Config # Импортируем наш конфиг
+from src.config import settings # Импортируем наш конфиг
 
 class AdminMiddleware(BaseMiddleware):
     """
@@ -17,7 +17,7 @@ class AdminMiddleware(BaseMiddleware):
     ) -> Awaitable[Any]:
         
         # Проверяем, что ID пользователя совпадает с ID админа из .env
-        if event.from_user.id != Config.ADMIN_ID:
+        if event.from_user.id != settings.ADMIN_ID:
             # Если нет - вежливо отвечаем и прекращаем обработку
             await event.answer("⛔️ У вас нет доступа к этой команде.")
             return

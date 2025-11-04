@@ -1,0 +1,44 @@
+# (Создайте этот файл в корне проекта)
+version: '3.8'
+
+services:
+  # 1. Сервис Базы данных PostgreSQL
+  db:
+    image: postgres:15-alpine # Легковесный образ Postgres 15
+    container_name: product_bot_db
+    environment:
+      # Эти переменные Postgres возьмет для создания БД
+      # Они ДОЛЖНЫ совпадать с тем, что вы напишете в .env
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data # Сохраняет данные БД между перезапусками
+    env_file:
+      - .env # Указываем docker-compose взять переменные из .env
+    restart: always
+
+  # 2. Сервис для FSM и кэша
+  redis:
+    image: redis:7-alpine # Легковесный образ Redis 7
+    container_name: product_bot_redis
+    restart: always
+
+  # 3. Сервис Вашего Бота
+  bot:
+    container_name: product_bot_app
+    # "Собрать" образ, используя Dockerfile из текущей директории (.)
+    build: .
+    env_file:
+      - .env # Бот тоже должен знать все секреты из .env
+    restart: always
+    # Бот запустится только ПОСЛЕ того, как сервисы 'db' и 'redis' будут готовы
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  # Docker сам создаст этот "том" для хранения данных Postgres
+  pg_data:
