@@ -11,6 +11,7 @@ The project uses enterprise-grade asynchronous tools for high performance and sc
 * **Runtime:** Python 3.11+
 * **Bot Framework:** **Aiogram 3.x** (Asynchronous)
 * **Database:** **PostgreSQL** (Production-ready)
+* **Docker:** **|Containerization|Portability|Standardization|Efficiency|Ecosystem|** (build, deploy, and run applications)
 * **ORM:** **SQLAlchemy 2.0** (Asynchronous Core & ORM)
 * **State Management:** **Redis** (Used for Aiogram FSM storage)
 * **Configuration:** **Pydantic-Settings** (Strictly validates environment variables from `.env`)

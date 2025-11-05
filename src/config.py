@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     # --- Конфигурация Pydantic ---
     model_config = SettingsConfigDict(
         # Указываем, откуда читать переменные
-        env_file=".env", 
+        # env_file=".env", 
         env_file_encoding="utf-8",
         # ИСПРАВЛЕНИЕ: Игнорируем любые переменные в окружении (например, db_url),
         # которые не описаны в этом классе. Это устраняет ошибку "Extra inputs".
